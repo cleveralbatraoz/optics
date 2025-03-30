@@ -7,6 +7,7 @@ qt_add_library(OpticsLib
     paraxial_characteristics.h
     float.h
     float.cpp
+    ray.h
 )
 
 target_include_directories(OpticsLib PUBLIC

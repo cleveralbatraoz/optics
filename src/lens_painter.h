@@ -1,6 +1,7 @@
 #pragma once
 
 #include "lens.h"
+#include "ray.h"
 
 #include <QPainter>
 #include <QPainterPath>
@@ -11,7 +12,7 @@ class LensPainter : public QWidget
     Q_OBJECT
 
   public:
-    LensPainter(const Lens &lens, QWidget *parent = nullptr);
+    LensPainter(const Lens &lens, const Ray &ray, QWidget *parent = nullptr);
 
   protected:
     virtual void paintEvent(QPaintEvent *event) override;
@@ -20,4 +21,5 @@ class LensPainter : public QWidget
     QPainterPath composePainterPath();
 
     Lens lens;
+    Ray ray;
 };

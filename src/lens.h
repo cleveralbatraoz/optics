@@ -18,9 +18,6 @@ class Lens
     ParaxialCharacteristics compute_paraxial_characteristics() const;
 
   private:
-    static ParaxialCharacteristics compute_paraxial_characteristics_from_transform_matrix(
-        const QVector<QVector<double>> &transform);
-
     double r1;
     double r2;
     double h;

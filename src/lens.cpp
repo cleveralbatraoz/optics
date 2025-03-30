@@ -3,6 +3,7 @@
 #include "paraxial_characteristics.h"
 
 #include <QVector>
+#include <QtTypes> // qsizetype
 
 Lens::Lens(double r1, double r2, double h, double d, double n) : r1(r1), r2(r2), h(h), d(d), n(n)
 {
@@ -33,46 +34,79 @@ double Lens::get_n() const
     return n;
 }
 
-ParaxialCharacteristics Lens::compute_paraxial_characteristics() const
+QVector<QVector<double>> matrixMultiply(const QVector<QVector<double>> &a, const QVector<QVector<double>> &b)
 {
-    const QVector<double> radiuses = {0.0, r1, r2};
-    const QVector<double> distances = {0.0, d, 0.0};
-    const QVector<double> refractive_index = {1.0, n, 1.0};
+    int rowsA = a.size();
+    int colsA = a[0].size();
+    int colsB = b[0].size();
 
-    QVector<QVector<double>> transform = {
-        {1.0, 0.0},
-        {0.0, 1.0},
-    };
+    QVector<QVector<double>> result(rowsA, QVector<double>(colsB, 0));
 
-    for (qsizetype i = 1; i < refractive_index.size(); ++i)
+    for (int i = 0; i < rowsA; ++i)
     {
-        transform[0][0] -= distances[i - 1] * transform[1][0];
-        transform[0][1] -= distances[i - 1] * transform[1][1];
-
-        const double mu = refractive_index[i - 1] / refractive_index[i];
-        const double surface_curvature = (radiuses[i] == 0) ? 0.0 : (1.0 / radiuses[i]);
-        const double alpha = surface_curvature * (1.0 - mu);
-
-        transform[1][0] = transform[1][0] * mu + alpha * transform[0][0];
-        transform[1][1] = transform[1][1] * mu + alpha * transform[0][1];
+        for (int j = 0; j < colsB; ++j)
+        {
+            for (int k = 0; k < colsA; ++k)
+            {
+                result[i][j] += a[i][k] * b[k][j];
+            }
+        }
     }
 
-    return compute_paraxial_characteristics_from_transform_matrix(transform);
+    return result;
 }
 
-ParaxialCharacteristics Lens::compute_paraxial_characteristics_from_transform_matrix(
-    const QVector<QVector<double>> &transform)
+QVector<QVector<double>> calculateTransferMatrix(double d)
 {
-    ParaxialCharacteristics paraxial_characteristics;
+    return {{1, -d}, {0, 1}};
+}
 
-    paraxial_characteristics.f.front = transform[0][1] - (transform[0][0] * transform[1][1]) / transform[1][0];
-    paraxial_characteristics.f.back = 1.0 / transform[1][0];
+// Метод для расчета матрицы преломления
+QVector<QVector<double>> calculateRefractionMatrix(double r, double mu)
+{
+    double rho = 1 / r;
+    return {{1, 0}, {rho * (1 - mu), mu}};
+}
 
-    paraxial_characteristics.sf.front = -transform[1][1] / transform[1][0];
-    paraxial_characteristics.sf.back = transform[0][0] / transform[1][0];
+// Метод для расчета гауссовой матрицы
+QVector<QVector<double>> calculateGaussianMatrix(const Lens &lens)
+{
+    const double r1 = lens.get_r1();
+    const double r2 = lens.get_r2();
+    const double d = lens.get_d();
+    const double n = lens.get_n();
 
-    paraxial_characteristics.sh.front = paraxial_characteristics.sf.front - paraxial_characteristics.f.front;
-    paraxial_characteristics.sh.back = paraxial_characteristics.sf.back - paraxial_characteristics.f.back;
+    // Матрица преломления на первой поверхности
+    QVector<QVector<double>> R1 = calculateRefractionMatrix(r1, 1 / n);
 
-    return paraxial_characteristics;
+    // Матрица переноса между поверхностями
+    QVector<QVector<double>> D = calculateTransferMatrix(d);
+
+    // Матрица преломления на второй поверхности
+    QVector<QVector<double>> R2 = calculateRefractionMatrix(r2, n);
+
+    // Умножение матриц в правильном порядке: G = R2 * D * R1
+    QVector<QVector<double>> RD = matrixMultiply(R2, matrixMultiply(D, R1));
+
+    return RD;
+}
+
+ParaxialCharacteristics Lens::compute_paraxial_characteristics() const
+{
+    const QVector<QVector<double>> G = calculateGaussianMatrix(*this);
+
+    // Элементы матрицы G
+    double A = G[0][0];
+    double C = G[1][0];
+    double D = G[1][1];
+
+    // Расчет параметров
+    double f_back = 1 / C;
+    double f_front = -f_back;
+    double Sf_back = A / C;
+    double Sf_front = (-D) / C;
+    double Sh_front = Sf_front + f_back;
+    double Sh_back = Sf_back - f_back;
+
+    return {.f = {f_front, f_back}, .sf = {Sf_front, Sf_back}, .sh = {Sh_front, Sh_back}};
 }

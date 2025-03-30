@@ -14,7 +14,7 @@
 #include <cmath>
 #include <numbers>
 
-LensPainter::LensPainter(const Lens &lens, QWidget *parent) : QWidget(parent), lens(lens)
+LensPainter::LensPainter(const Lens &lens, const Ray &ray, QWidget *parent) : QWidget(parent), lens(lens), ray(ray)
 {
     setFixedSize(600, 600);
 }
@@ -28,61 +28,58 @@ void LensPainter::paintEvent(QPaintEvent *event)
     painter.setRenderHint(QPainter::Antialiasing);
     painter.setPen(QPen(Qt::black, 2));
 
-    QPainterPath path = composePainterPath();
+    const QPainterPath path = composePainterPath();
 
-    QRectF pathRect = path.boundingRect();
-    QRect widgetRect = rect();
-    qreal scaleX = widgetRect.width() / pathRect.width();
-    qreal scaleY = widgetRect.height() / pathRect.height();
-    qreal scale = std::min(scaleX, scaleY) / 2;
-    QPointF widgetCenter = widgetRect.center();
+    const QRectF pathRect = path.boundingRect();
+    const QRect widgetRect = rect();
+    const QPointF widgetCenter = widgetRect.center();
+
+    const double scaleX = widgetRect.width() / pathRect.width();
+    const double scaleY = widgetRect.height() / pathRect.height();
+    const double scale = std::min(scaleX, scaleY) / 2;
+
     painter.translate(widgetCenter);
     painter.scale(scale, scale);
 
-    // painter.setBrush(Qt::blue);
-    painter.fillPath(path, Qt::blue);
+    const double arrow = calculateSagitta(lens.get_r1(), ray.h);
+    const QPointF intersection_point(arrow, -ray.h);
 
-    // painter.setPen(QPen(Qt::black, 1, Qt::DashDotLine));
-    // painter.drawLine(0, centerY, width, centerY);
+    const double length = 200000;
+
+    const double angle = qDegreesToRadians(ray.alpha);
+    const QPointF end_point = intersection_point - QPointF(std::cos(angle) * length, std::sin(angle) * length);
+    QLineF line(intersection_point, end_point);
+
+    QPen pen;
+    pen.setColor(Qt::yellow);        // Set the color of the line
+    pen.setWidthF(0.35);             // Set the width of the line
+    pen.setStyle(Qt::DashLine);      // Set the style of the line (e.g., solid, dashed, dotted)
+    pen.setCapStyle(Qt::RoundCap);   // Set the cap style for the endpoints
+    pen.setJoinStyle(Qt::RoundJoin); // Set the join style for line joins
+
+    // Set the painter's pen
+    painter.setPen(pen);
+
+    painter.fillPath(path, Qt::blue);
+    painter.drawLine(line);
 }
 
 QPainterPath LensPainter::composePainterPath()
 {
     QPainterPath path;
 
-    double h1 = lens.get_h();
-    double h2 = lens.get_h();
-
-    double r1 = lens.get_r1();
-    double r2 = lens.get_r2();
-    double h = lens.get_h();
-    double d = lens.get_d();
+    const double r1 = lens.get_r1();
+    const double r2 = lens.get_r2();
+    const double h = lens.get_h();
+    const double d = lens.get_d();
 
     // Вычисляем стрелку прогиба поверхностей
 
-    double dArrow1 = 0.0;
-    double dArrow2 = 0.0;
-
-    if (!isZero(r1))
-    {
-        dArrow1 = fabs(r1) - sqrt(r1 * r1 - h1 * h1);
-    }
-    if (r1 < 0.0)
-    {
-        dArrow1 = -dArrow1;
-    }
-
-    if (!isZero(r2))
-    {
-        dArrow2 = fabs(r2) - sqrt(r2 * r2 - h2 * h2);
-    }
-    if (r2 < 0.0)
-    {
-        dArrow2 = -dArrow2;
-    }
+    const double arrow1 = calculateSagitta1(lens);
+    const double arrow2 = calculateSagitta2(lens);
 
     // Первая точка контура - верхняя точка поверхности
-    path.moveTo(dArrow1, -h);
+    path.moveTo(arrow1, -h);
 
     if (isZero(r1))
     {
@@ -91,7 +88,7 @@ QPainterPath LensPainter::composePainterPath()
     else
     {
         // Рисуем 1ю поверхность (сверху вниз)
-        double dAngle = asin(h1 / r1) * 180 / std::numbers::pi; // угол между осью и крайней точкой поверхности
+        double dAngle = asin(h / r1) * 180 / std::numbers::pi; // угол между осью и крайней точкой поверхности
         if (r1 > 0)
         {
             path.arcTo(0, -r1, r1 * 2, r1 * 2, 180 - dAngle, dAngle * 2);
@@ -103,7 +100,7 @@ QPainterPath LensPainter::composePainterPath()
     }
 
     // Добавляем нижнюю линию между поверхностями
-    path.lineTo(path.currentPosition() + QPointF(d + dArrow2, 0.0));
+    path.lineTo(path.currentPosition() + QPointF(d + arrow2, 0.0));
 
     if (isZero(r2))
     {
@@ -112,7 +109,7 @@ QPainterPath LensPainter::composePainterPath()
     else
     {
         // Рисуем 2ю поверхность (сверху вниз)
-        double dAngle = asin(h2 / r2) * 180 / std::numbers::pi;
+        double dAngle = asin(h / r2) * 180 / std::numbers::pi;
         if (r2 > 0)
         {
             path.arcTo(d, -r2, r2 * 2, r2 * 2, 180 + dAngle, -dAngle * 2);

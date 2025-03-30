@@ -20,7 +20,10 @@ class InputWindow : public QWidget
 
     QLineEdit *r1_input_line = nullptr;
     QLineEdit *r2_input_line = nullptr;
+    QLineEdit *lens_h_input_line = nullptr;
     QLineEdit *d_input_line = nullptr;
-    QLineEdit *h_input_line = nullptr;
     QLineEdit *n_input_line = nullptr;
+
+    QLineEdit *alpha_input_line = nullptr;
+    QLineEdit *ray_h_input_line = nullptr;
 };

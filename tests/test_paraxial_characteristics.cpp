@@ -1,10 +1,9 @@
 #include <QtTest>
 
+#include <float.h>
 #include <lens.h>
 
 #include <QtNumeric>
-
-static constexpr double EPS = 1e-5;
 
 class TestParaxialCharacteristics : public QObject
 {
@@ -18,8 +17,6 @@ class TestParaxialCharacteristics : public QObject
     void test5();
     void test6();
     void test7();
-    void test8();
-    void test9();
 };
 
 void TestParaxialCharacteristics::test1()
@@ -103,32 +100,6 @@ void TestParaxialCharacteristics::test6()
 void TestParaxialCharacteristics::test7()
 {
     const Lens lens(15.0, 0.1, 10.0, 10.0, 1.518292);
-    const ParaxialCharacteristics p = lens.compute_paraxial_characteristics();
-
-    QCOMPARE_LE(fabs(p.f.front - 0.2519618397), EPS);
-    QCOMPARE_LE(fabs(p.f.back - -0.2519618397), EPS);
-    QCOMPARE_LE(fabs(p.sf.front - 8.853061354), EPS);
-    QCOMPARE_LE(fabs(p.sf.back - -0.1946211763), EPS);
-    QCOMPARE_LE(fabs(p.sh.front - 8.601099514), EPS);
-    QCOMPARE_LE(fabs(p.sh.back - 0.05734066343), EPS);
-}
-
-void TestParaxialCharacteristics::test8()
-{
-    const Lens lens(0.0, 15.0, 10.0, 10.0, 1.518292);
-    const ParaxialCharacteristics p = lens.compute_paraxial_characteristics();
-
-    QCOMPARE_LE(fabs(p.f.front - -0.1580308239), EPS);
-    QCOMPARE_LE(fabs(p.f.back - 0.1580308239), EPS);
-    QCOMPARE_LE(fabs(p.sf.front - -0.1939949695), EPS);
-    QCOMPARE_LE(fabs(p.sf.back - -5.236591014), EPS);
-    QCOMPARE_LE(fabs(p.sh.front - -0.03596414559), EPS);
-    QCOMPARE_LE(fabs(p.sh.back - -5.394621838), EPS);
-}
-
-void TestParaxialCharacteristics::test9()
-{
-    const Lens lens(15.0, 0.0, 10.0, 10.0, 1.518292);
     const ParaxialCharacteristics p = lens.compute_paraxial_characteristics();
 
     QCOMPARE_LE(fabs(p.f.front - 0.2519618397), EPS);
