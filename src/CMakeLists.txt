@@ -5,6 +5,8 @@ qt_add_library(OpticsLib
     lens.cpp
     lens.h
     paraxial_characteristics.h
+    float.h
+    float.cpp
 )
 
 target_include_directories(OpticsLib PUBLIC
