@@ -46,7 +46,7 @@ void InputWindow::on_compute_clicked()
         const double h = h_input_line->text().toDouble();
         const double n = n_input_line->text().toDouble();
 
-        const Lens lens(r1, r2, d, h, n);
+        const Lens lens(r1, r2, h, d, n);
 
         OutputWindow *output_window = new OutputWindow(lens, this);
         output_window->show();
@@ -59,10 +59,10 @@ void InputWindow::on_compute_clicked()
 
 void InputWindow::on_fill_clicked()
 {
-    r1_input_line->setText("-500");
-    r2_input_line->setText("500");
-    d_input_line->setText("50");
-    h_input_line->setText("-10");
+    r1_input_line->setText("50");
+    r2_input_line->setText("-50");
+    d_input_line->setText("5");
+    h_input_line->setText("15");
     n_input_line->setText("1.5");
 }
 
