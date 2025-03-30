@@ -3,14 +3,13 @@
 #include "lens.h"
 #include "lens_painter.h"
 #include "paraxial_characteristics.h"
-#include "ray.h"
 
 #include <QDialog>
 #include <QLabel>
 #include <QString>
 #include <QVBoxLayout>
 
-OutputWindow::OutputWindow(const Lens &lens, const Ray &ray, QWidget *parent) : QDialog(parent)
+OutputWindow::OutputWindow(const Lens &lens, QWidget *parent) : QDialog(parent)
 {
     QVBoxLayout *layout = new QVBoxLayout(this);
 
@@ -23,6 +22,6 @@ OutputWindow::OutputWindow(const Lens &lens, const Ray &ray, QWidget *parent) : 
     layout->addWidget(new QLabel("SH: " + QString::number(paraxial_characteristics.sh.front)));
     layout->addWidget(new QLabel("SH_back: " + QString::number(paraxial_characteristics.sh.back)));
 
-    LensPainter *lens_painter = new LensPainter(lens, ray, this);
+    LensPainter *lens_painter = new LensPainter(lens, this);
     layout->addWidget(lens_painter);
 }

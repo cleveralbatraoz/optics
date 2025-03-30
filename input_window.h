@@ -23,6 +23,4 @@ class InputWindow : public QWidget
     QLineEdit *d_input_line = nullptr;
     QLineEdit *h_input_line = nullptr;
     QLineEdit *n_input_line = nullptr;
-    // QLineEdit *ray_height_input_line = nullptr;
-    QLineEdit *ray_angle_input_line = nullptr;
 };

@@ -18,8 +18,8 @@ qt_add_executable(lens
     output_window.h output_window.cpp
     lens_painter.h lens_painter.cpp
     input_window.h input_window.cpp
-    ray.h
-    ray.cpp
+
+
 
 
 )

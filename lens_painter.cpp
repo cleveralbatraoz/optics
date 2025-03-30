@@ -1,6 +1,6 @@
 #include "lens_painter.h"
+
 #include "lens.h"
-#include "ray.h"
 
 #include <QPaintEvent>
 #include <QPainter>
@@ -13,7 +13,7 @@
 #include <cmath>
 #include <numbers>
 
-LensPainter::LensPainter(const Lens &lens, const Ray &ray, QWidget *parent) : QWidget(parent), lens(lens), ray(ray)
+LensPainter::LensPainter(const Lens &lens, QWidget *parent) : QWidget(parent), lens(lens)
 {
     setFixedSize(600, 600);
 }
@@ -31,27 +31,15 @@ void LensPainter::paintEvent(QPaintEvent *event)
 
     QRectF pathRect = path.boundingRect();
     QRect widgetRect = rect();
-
     qreal scaleX = widgetRect.width() / pathRect.width();
     qreal scaleY = widgetRect.height() / pathRect.height();
     qreal scale = std::min(scaleX, scaleY) / 2;
-
-    // QPointF pathCenter = pathRect.center();
     QPointF widgetCenter = widgetRect.center();
-
-    QPointF intersection = intersect(ray, obtainCircle(lens)).value();
-
     painter.translate(widgetCenter);
     painter.scale(scale, scale);
 
-    // painter.translate(-pathCenter);
-
     // painter.setBrush(Qt::blue);
     painter.fillPath(path, Qt::blue);
-
-    painter.drawEllipse(0, 0, 5, 10);
-
-    painter.drawLine(ray.origin, intersection);
 
     // painter.setPen(QPen(Qt::black, 1, Qt::DashDotLine));
     // painter.drawLine(0, centerY, width, centerY);
