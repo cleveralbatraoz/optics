@@ -4,7 +4,8 @@
 
 #include <QVector>
 
-class Lens {
+class Lens
+{
   public:
     Lens(double r1, double r2, double h, double d, double n);
 

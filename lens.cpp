@@ -33,7 +33,8 @@ double Lens::get_n() const
     return n;
 }
 
-ParaxialCharacteristics Lens::compute_paraxial_characteristics() const {
+ParaxialCharacteristics Lens::compute_paraxial_characteristics() const
+{
     const QVector<double> radiuses = {0.0, r1, r2};
     const QVector<double> distances = {0.0, d, 0.0};
     const QVector<double> refractive_index = {1.0, n, 1.0};
