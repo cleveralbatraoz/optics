@@ -1,5 +1,9 @@
 #include "float.h"
 
+#include "lens.h"
+
+#include <QVector>
+
 #include <cmath>
 
 bool isEqual(double a, double b)

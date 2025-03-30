@@ -16,7 +16,7 @@
 
 LensPainter::LensPainter(const Lens &lens, const Ray &ray, QWidget *parent) : QWidget(parent), lens(lens), ray(ray)
 {
-    setFixedSize(600, 600);
+    setFixedSize(800, 800);
 }
 
 void LensPainter::paintEvent(QPaintEvent *event)
@@ -26,7 +26,16 @@ void LensPainter::paintEvent(QPaintEvent *event)
     QPainter painter(this);
 
     painter.setRenderHint(QPainter::Antialiasing);
-    painter.setPen(QPen(Qt::black, 2));
+
+    QPen pen;
+    pen.setColor(Qt::yellow);        // Set the color of the line
+    pen.setWidthF(0.35);             // Set the width of the line
+    pen.setStyle(Qt::SolidLine);     // Set the style of the line (e.g., solid, dashed, dotted)
+    pen.setCapStyle(Qt::RoundCap);   // Set the cap style for the endpoints
+    pen.setJoinStyle(Qt::RoundJoin); // Set the join style for line joins
+
+    // Set the painter's pen
+    painter.setPen(pen);
 
     const QPainterPath path = composePainterPath();
 
@@ -41,27 +50,56 @@ void LensPainter::paintEvent(QPaintEvent *event)
     painter.translate(widgetCenter);
     painter.scale(scale, scale);
 
-    const double arrow = calculateSagitta(lens.get_r1(), ray.h);
-    const QPointF intersection_point(arrow, -ray.h);
+    const double arrow1 = calculateSagitta(lens.get_r1(), ray.h);
+    const QPointF intersection_point(arrow1, -ray.h);
 
-    const double length = 200000;
+    const double length = 200000.0;
 
     const double angle = qDegreesToRadians(ray.alpha);
     const QPointF end_point = intersection_point - QPointF(std::cos(angle) * length, std::sin(angle) * length);
-    QLineF line(intersection_point, end_point);
+    const QLineF line(intersection_point, end_point);
+    painter.drawLine(line);
 
-    QPen pen;
-    pen.setColor(Qt::yellow);        // Set the color of the line
-    pen.setWidthF(0.35);             // Set the width of the line
-    pen.setStyle(Qt::DashLine);      // Set the style of the line (e.g., solid, dashed, dotted)
-    pen.setCapStyle(Qt::RoundCap);   // Set the cap style for the endpoints
-    pen.setJoinStyle(Qt::RoundJoin); // Set the join style for line joins
+    const double r1 = lens.get_r1();
+    const double r2 = lens.get_r2();
+    const double n = lens.get_n();
+    const double mu = 1 / n;
+    const double d = lens.get_d();
 
-    // Set the painter's pen
+    const QVector<QVector<double>> refraction = Lens::calculateRefractionMatrix(r1, mu);
+    const QVector<QVector<double>> transfer = Lens::calculateTransferMatrix(d);
+
+    const QVector<QVector<double>> ray_matrix1 = {{ray.h}, {angle}};
+    const QVector<QVector<double>> ray_matrix2 = Lens::matrixMultiply(refraction, ray_matrix1);
+    const QVector<QVector<double>> ray_matrix3 = Lens::matrixMultiply(transfer, ray_matrix2);
+
+    const double arrow2 = calculateSagitta(lens.get_r2(), -ray_matrix3[0][0]);
+    const QPointF intersection_point2(intersection_point.x() + d + arrow2 - arrow1, -ray_matrix3[0][0]);
+
+    pen.setColor(Qt::red);
     painter.setPen(pen);
 
-    painter.fillPath(path, Qt::blue);
-    painter.drawLine(line);
+    painter.drawLine(QLineF(intersection_point, intersection_point2));
+
+    const QVector<QVector<double>> refraction2 = Lens::calculateRefractionMatrixReverse(r2, mu);
+    const QVector<QVector<double>> ray_matrix4 = Lens::matrixMultiply(refraction2, ray_matrix3);
+    // const QVector<QVector<double>> transfer2 = Lens::calculateTransferMatrix(length);
+    // const QVector<QVector<double>> ray_matrix5 = Lens::matrixMultiply(transfer2, ray_matrix4);
+
+    const QPointF end_point2 =
+        intersection_point2 + QPointF(std::cos(ray_matrix4[1][0]) * length, std::sin(ray_matrix4[1][0]) * length);
+
+    // const QPointF intersection_point3(intersection_point2.x() + length, -ray_matrix5[0][0]); // :D
+
+    pen.setColor(Qt::green);
+    painter.setPen(pen);
+
+    painter.drawLine(intersection_point2, end_point2);
+
+    pen.setColor(Qt::blue);
+    painter.setPen(pen);
+
+    painter.drawPath(path);
 }
 
 QPainterPath LensPainter::composePainterPath()
@@ -100,7 +138,7 @@ QPainterPath LensPainter::composePainterPath()
     }
 
     // Добавляем нижнюю линию между поверхностями
-    path.lineTo(path.currentPosition() + QPointF(d + arrow2, 0.0));
+    path.lineTo(path.currentPosition() + QPointF(d + arrow2 - arrow1, 0.0));
 
     if (isZero(r2))
     {

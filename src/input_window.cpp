@@ -30,7 +30,7 @@ InputWindow::InputWindow(QWidget *parent) : QWidget(parent)
     layout->addWidget(n_input_line);
 
     layout->addWidget(alpha_input_line);
-    layout->addWidget(lens_h_input_line);
+    layout->addWidget(ray_h_input_line);
 
     QPushButton *compute_button = new QPushButton("compute", this);
     layout->addWidget(compute_button);

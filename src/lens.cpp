@@ -3,7 +3,6 @@
 #include "paraxial_characteristics.h"
 
 #include <QVector>
-#include <QtTypes> // qsizetype
 
 Lens::Lens(double r1, double r2, double h, double d, double n) : r1(r1), r2(r2), h(h), d(d), n(n)
 {
@@ -34,48 +33,25 @@ double Lens::get_n() const
     return n;
 }
 
-QVector<QVector<double>> matrixMultiply(const QVector<QVector<double>> &a, const QVector<QVector<double>> &b)
-{
-    int rowsA = a.size();
-    int colsA = a[0].size();
-    int colsB = b[0].size();
-
-    QVector<QVector<double>> result(rowsA, QVector<double>(colsB, 0));
-
-    for (int i = 0; i < rowsA; ++i)
-    {
-        for (int j = 0; j < colsB; ++j)
-        {
-            for (int k = 0; k < colsA; ++k)
-            {
-                result[i][j] += a[i][k] * b[k][j];
-            }
-        }
-    }
-
-    return result;
-}
-
-QVector<QVector<double>> calculateTransferMatrix(double d)
+QVector<QVector<double>> Lens::calculateTransferMatrix(double d)
 {
     return {{1, -d}, {0, 1}};
 }
 
-// Метод для расчета матрицы преломления
-QVector<QVector<double>> calculateRefractionMatrix(double r, double mu)
+QVector<QVector<double>> Lens::calculateRefractionMatrix(double r, double mu)
 {
     double rho = 1 / r;
     return {{1, 0}, {rho * (1 - mu), mu}};
 }
 
-// Метод для расчета гауссовой матрицы
-QVector<QVector<double>> calculateGaussianMatrix(const Lens &lens)
+QVector<QVector<double>> Lens::calculateRefractionMatrixReverse(double r, double mu)
 {
-    const double r1 = lens.get_r1();
-    const double r2 = lens.get_r2();
-    const double d = lens.get_d();
-    const double n = lens.get_n();
+    double rho = 1 / r;
+    return {{1, 0}, {-(rho * (1 - mu)) / mu, 1 / mu}};
+}
 
+QVector<QVector<double>> Lens::calculateGaussianMatrix(double r1, double r2, double d, double n)
+{
     // Матрица преломления на первой поверхности
     QVector<QVector<double>> R1 = calculateRefractionMatrix(r1, 1 / n);
 
@@ -93,7 +69,7 @@ QVector<QVector<double>> calculateGaussianMatrix(const Lens &lens)
 
 ParaxialCharacteristics Lens::compute_paraxial_characteristics() const
 {
-    const QVector<QVector<double>> G = calculateGaussianMatrix(*this);
+    const QVector<QVector<double>> G = calculateGaussianMatrix(r1, r2, d, n);
 
     // Элементы матрицы G
     double A = G[0][0];
