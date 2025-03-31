@@ -1,5 +1,6 @@
 #include "lens.h"
 
+#include "float.h"
 #include "paraxial_characteristics.h"
 
 #include <QVector>
@@ -40,13 +41,13 @@ QVector<QVector<double>> Lens::calculateTransferMatrix(double d)
 
 QVector<QVector<double>> Lens::calculateRefractionMatrix(double r, double mu)
 {
-    double rho = 1 / r;
+    double rho = isZero(r) ? 0.0 : 1 / r;
     return {{1, 0}, {rho * (1 - mu), mu}};
 }
 
 QVector<QVector<double>> Lens::calculateRefractionMatrixReverse(double r, double mu)
 {
-    double rho = 1 / r;
+    double rho = isZero(r) ? 0.0 : 1 / r;
     return {{1, 0}, {-(rho * (1 - mu)) / mu, 1 / mu}};
 }
 

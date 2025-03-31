@@ -27,10 +27,8 @@ void LensPainter::paintEvent(QPaintEvent *event)
 
     painter.setRenderHint(QPainter::Antialiasing);
 
-    QPen pen;
-    pen.setColor(Qt::yellow);        // Set the color of the line
-    pen.setWidthF(0.35);             // Set the width of the line
-    pen.setStyle(Qt::SolidLine);     // Set the style of the line (e.g., solid, dashed, dotted)
+    QPen pen;            // Set the color of the line
+    pen.setWidthF(0.35); // Set the width of the line      // Set the style of the line (e.g., solid, dashed, dotted)
     pen.setCapStyle(Qt::RoundCap);   // Set the cap style for the endpoints
     pen.setJoinStyle(Qt::RoundJoin); // Set the join style for line joins
 
@@ -50,6 +48,13 @@ void LensPainter::paintEvent(QPaintEvent *event)
     painter.translate(widgetCenter);
     painter.scale(scale, scale);
 
+    painter.fillPath(path, Qt::blue);
+
+    pen.setColor(Qt::black);
+    pen.setStyle(Qt::SolidLine);
+    painter.setPen(pen);
+    painter.drawPath(path);
+
     const double arrow1 = calculateSagitta(lens.get_r1(), ray.h);
     const QPointF intersection_point(arrow1, -ray.h);
 
@@ -58,6 +63,12 @@ void LensPainter::paintEvent(QPaintEvent *event)
     const double angle = qDegreesToRadians(ray.alpha);
     const QPointF end_point = intersection_point - QPointF(std::cos(angle) * length, std::sin(angle) * length);
     const QLineF line(intersection_point, end_point);
+
+    pen.setColor(Qt::yellow);
+    pen.setStyle(Qt::SolidLine);
+
+    painter.setPen(pen);
+
     painter.drawLine(line);
 
     const double r1 = lens.get_r1();
@@ -77,6 +88,7 @@ void LensPainter::paintEvent(QPaintEvent *event)
     const QPointF intersection_point2(intersection_point.x() + d + arrow2 - arrow1, -ray_matrix3[0][0]);
 
     pen.setColor(Qt::red);
+    pen.setStyle(Qt::DotLine);
     painter.setPen(pen);
 
     painter.drawLine(QLineF(intersection_point, intersection_point2));
@@ -91,15 +103,11 @@ void LensPainter::paintEvent(QPaintEvent *event)
 
     // const QPointF intersection_point3(intersection_point2.x() + length, -ray_matrix5[0][0]); // :D
 
-    pen.setColor(Qt::green);
+    pen.setColor(Qt::yellow);
+    pen.setStyle(Qt::SolidLine);
     painter.setPen(pen);
 
     painter.drawLine(intersection_point2, end_point2);
-
-    pen.setColor(Qt::blue);
-    painter.setPen(pen);
-
-    painter.drawPath(path);
 }
 
 QPainterPath LensPainter::composePainterPath()
