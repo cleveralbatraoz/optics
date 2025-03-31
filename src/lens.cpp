@@ -1,6 +1,7 @@
 #include "lens.h"
 
 #include "float.h"
+#include "matrix_operations.h"
 #include "paraxial_characteristics.h"
 
 #include <QVector>
@@ -32,40 +33,6 @@ double Lens::get_h() const
 double Lens::get_n() const
 {
     return n;
-}
-
-QVector<QVector<double>> Lens::calculateTransferMatrix(double d)
-{
-    return {{1, -d}, {0, 1}};
-}
-
-QVector<QVector<double>> Lens::calculateRefractionMatrix(double r, double mu)
-{
-    double rho = isZero(r) ? 0.0 : 1 / r;
-    return {{1, 0}, {rho * (1 - mu), mu}};
-}
-
-QVector<QVector<double>> Lens::calculateRefractionMatrixReverse(double r, double mu)
-{
-    double rho = isZero(r) ? 0.0 : 1 / r;
-    return {{1, 0}, {-(rho * (1 - mu)) / mu, 1 / mu}};
-}
-
-QVector<QVector<double>> Lens::calculateGaussianMatrix(double r1, double r2, double d, double n)
-{
-    // Матрица преломления на первой поверхности
-    QVector<QVector<double>> R1 = calculateRefractionMatrix(r1, 1 / n);
-
-    // Матрица переноса между поверхностями
-    QVector<QVector<double>> D = calculateTransferMatrix(d);
-
-    // Матрица преломления на второй поверхности
-    QVector<QVector<double>> R2 = calculateRefractionMatrix(r2, n);
-
-    // Умножение матриц в правильном порядке: G = R2 * D * R1
-    QVector<QVector<double>> RD = matrixMultiply(R2, matrixMultiply(D, R1));
-
-    return RD;
 }
 
 ParaxialCharacteristics Lens::compute_paraxial_characteristics() const

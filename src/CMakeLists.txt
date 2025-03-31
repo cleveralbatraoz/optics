@@ -8,6 +8,8 @@ qt_add_library(OpticsLib
     float.h
     float.cpp
     ray.h
+    matrix_operations.h
+    matrix_operations.cpp
 )
 
 target_include_directories(OpticsLib PUBLIC

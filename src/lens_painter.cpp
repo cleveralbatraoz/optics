@@ -2,6 +2,7 @@
 
 #include "float.h"
 #include "lens.h"
+#include "matrix_operations.h"
 
 #include <QPaintEvent>
 #include <QPainter>
@@ -77,12 +78,12 @@ void LensPainter::paintEvent(QPaintEvent *event)
     const double mu = 1 / n;
     const double d = lens.get_d();
 
-    const QVector<QVector<double>> refraction = Lens::calculateRefractionMatrix(r1, mu);
-    const QVector<QVector<double>> transfer = Lens::calculateTransferMatrix(d);
+    const QVector<QVector<double>> refraction = calculateRefractionMatrix(r1, mu);
+    const QVector<QVector<double>> transfer = calculateTransferMatrix(d);
 
     const QVector<QVector<double>> ray_matrix1 = {{ray.h}, {angle}};
-    const QVector<QVector<double>> ray_matrix2 = Lens::matrixMultiply(refraction, ray_matrix1);
-    const QVector<QVector<double>> ray_matrix3 = Lens::matrixMultiply(transfer, ray_matrix2);
+    const QVector<QVector<double>> ray_matrix2 = matrixMultiply(refraction, ray_matrix1);
+    const QVector<QVector<double>> ray_matrix3 = matrixMultiply(transfer, ray_matrix2);
 
     const double arrow2 = calculateSagitta(lens.get_r2(), -ray_matrix3[0][0]);
     const QPointF intersection_point2(intersection_point.x() + d + arrow2 - arrow1, -ray_matrix3[0][0]);
@@ -93,8 +94,8 @@ void LensPainter::paintEvent(QPaintEvent *event)
 
     painter.drawLine(QLineF(intersection_point, intersection_point2));
 
-    const QVector<QVector<double>> refraction2 = Lens::calculateRefractionMatrixReverse(r2, mu);
-    const QVector<QVector<double>> ray_matrix4 = Lens::matrixMultiply(refraction2, ray_matrix3);
+    const QVector<QVector<double>> refraction2 = calculateRefractionMatrixReverse(r2, mu);
+    const QVector<QVector<double>> ray_matrix4 = matrixMultiply(refraction2, ray_matrix3);
     // const QVector<QVector<double>> transfer2 = Lens::calculateTransferMatrix(length);
     // const QVector<QVector<double>> ray_matrix5 = Lens::matrixMultiply(transfer2, ray_matrix4);
 
