@@ -3,7 +3,8 @@
 #include "lens.h"
 #include "ray.h"
 
-#include <QPainter>
+#include <QLineF>
+#include <QPaintEvent>
 #include <QPainterPath>
 #include <QWidget>
 
@@ -18,7 +19,11 @@ class LensPainter : public QWidget
     virtual void paintEvent(QPaintEvent *event) override;
 
   private:
-    QPainterPath composePainterPath();
+    QPainterPath compose_lens_path();
+
+    static void draw_lens(QPainter &painter, const QPainterPath &lens_path);
+    static void draw_lines(QPainter &painter, const QLineF &line1, const QLineF &line2, const QLineF &line3);
+    static QPen obtain_default_pen();
 
     Lens lens;
     Ray ray;

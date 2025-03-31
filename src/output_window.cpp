@@ -17,11 +17,11 @@ OutputWindow::OutputWindow(const Lens &lens, const Ray &ray, QWidget *parent) : 
     ParaxialCharacteristics paraxial_characteristics = lens.compute_paraxial_characteristics();
 
     layout->addWidget(new QLabel("F: " + QString::number(paraxial_characteristics.f.front)));
-    layout->addWidget(new QLabel("F_back: " + QString::number(paraxial_characteristics.f.back)));
+    layout->addWidget(new QLabel("F': " + QString::number(paraxial_characteristics.f.back)));
     layout->addWidget(new QLabel("SF: " + QString::number(paraxial_characteristics.sf.front)));
-    layout->addWidget(new QLabel("SF_back: " + QString::number(paraxial_characteristics.sf.back)));
+    layout->addWidget(new QLabel("SF': " + QString::number(paraxial_characteristics.sf.back)));
     layout->addWidget(new QLabel("SH: " + QString::number(paraxial_characteristics.sh.front)));
-    layout->addWidget(new QLabel("SH_back: " + QString::number(paraxial_characteristics.sh.back)));
+    layout->addWidget(new QLabel("SH': " + QString::number(paraxial_characteristics.sh.back)));
 
     LensPainter *lens_painter = new LensPainter(lens, ray, this);
     layout->addWidget(lens_painter);

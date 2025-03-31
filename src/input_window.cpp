@@ -5,92 +5,123 @@
 #include "ray.h"
 
 #include <QDoubleValidator>
+#include <QGroupBox>
+#include <QLabel>
 #include <QLineEdit>
+#include <QMessageBox>
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QWidget>
 
+#include <algorithm>
+#include <cmath>
+
 InputWindow::InputWindow(QWidget *parent) : QWidget(parent)
 {
-    QVBoxLayout *layout = new QVBoxLayout(this);
+    QVBoxLayout *mainLayout = new QVBoxLayout(this);
 
-    r1_input_line = make_new_input_line("r1");
-    r2_input_line = make_new_input_line("r2");
-    lens_h_input_line = make_new_input_line("h of lens");
-    d_input_line = make_new_input_line("d");
-    n_input_line = make_new_input_line("n");
+    // Define the width based on the label with the maximum length
+    const int labelWidth = 80; // Example fixed width, adjust as needed
 
-    alpha_input_line = make_new_input_line("alpha");
-    ray_h_input_line = make_new_input_line("h of ray");
+    // Create a group box to hold the inputs
+    QGroupBox *inputsGroupBox = new QGroupBox("Lens Parameters");
 
-    layout->addWidget(r1_input_line);
-    layout->addWidget(r2_input_line);
-    layout->addWidget(lens_h_input_line);
-    layout->addWidget(d_input_line);
-    layout->addWidget(n_input_line);
+    // Create a layout for the group box
+    QVBoxLayout *groupBoxLayout = new QVBoxLayout(inputsGroupBox);
 
-    layout->addWidget(alpha_input_line);
-    layout->addWidget(ray_h_input_line);
+    // Add labeled input lines to the group box
+    groupBoxLayout->addWidget(make_labeled_input_line("r1:", r1_input_line, labelWidth));
+    groupBoxLayout->addWidget(make_labeled_input_line("r2:", r2_input_line, labelWidth));
+    groupBoxLayout->addWidget(make_labeled_input_line("h of lens:", lens_h_input_line, labelWidth));
+    groupBoxLayout->addWidget(make_labeled_input_line("d:", d_input_line, labelWidth));
+    groupBoxLayout->addWidget(make_labeled_input_line("n:", n_input_line, labelWidth));
+    groupBoxLayout->addWidget(make_labeled_input_line("α of ray:", alpha_input_line, labelWidth));
+    groupBoxLayout->addWidget(make_labeled_input_line("h of ray:", ray_h_input_line, labelWidth));
 
-    QPushButton *compute_button = new QPushButton("compute", this);
-    layout->addWidget(compute_button);
-    connect(compute_button, &QPushButton::clicked, this, &InputWindow::on_compute_clicked);
+    // Add the group box to the main layout
+    mainLayout->addWidget(inputsGroupBox);
 
-    QPushButton *fill_button = new QPushButton("fill", this);
-    layout->addWidget(fill_button);
-    connect(fill_button, &QPushButton::clicked, this, &InputWindow::on_fill_clicked);
+    // Add control buttons
+    QPushButton *computeButton = new QPushButton("Compute", this);
+    mainLayout->addWidget(computeButton);
+    connect(computeButton, &QPushButton::clicked, this, &InputWindow::on_compute_clicked);
 
+    // Set a fixed size for the window
     resize(500, 500);
 }
 
 void InputWindow::on_compute_clicked()
 {
-    try
+    bool ok = true;
+
+    const double r1 = r1_input_line->text().toDouble(&ok);
+    const double r2 = r2_input_line->text().toDouble(&ok);
+    const double lens_h = lens_h_input_line->text().toDouble(&ok);
+    const double d = d_input_line->text().toDouble(&ok);
+    const double n = n_input_line->text().toDouble(&ok);
+    const double alpha = alpha_input_line->text().toDouble(&ok);
+    const double ray_h = ray_h_input_line->text().toDouble(&ok);
+
+    if (!ok)
     {
-        const double r1 = r1_input_line->text().toDouble();
-        const double r2 = r2_input_line->text().toDouble();
-        const double lens_h = lens_h_input_line->text().toDouble();
-        const double d = d_input_line->text().toDouble();
-        const double n = n_input_line->text().toDouble();
-
-        const Lens lens(r1, r2, lens_h, d, n);
-
-        const double alpha = alpha_input_line->text().toDouble();
-        const double ray_h = ray_h_input_line->text().toDouble();
-
-        const Ray ray{alpha, ray_h};
-
-        OutputWindow *output_window = new OutputWindow(lens, ray, this);
-        output_window->show();
+        QMessageBox messageBox;
+        messageBox.critical(this, "Incorrect input", "Incorrect input");
+        return;
     }
-    catch (...)
+
+    if (lens_h <= 0.0 || lens_h > std::min(fabs(r1), fabs(r2)))
     {
-        // TODO
+        QMessageBox messageBox;
+        messageBox.critical(this, "Incorrect input", "Incorrect lens_h");
+        return;
     }
+
+    if (d <= 0.0)
+    {
+        QMessageBox messageBox;
+        messageBox.critical(this, "Incorrect input", "Incorrect d");
+        return;
+    }
+
+    if (fabs(ray_h) > lens_h)
+    {
+        QMessageBox messageBox;
+        messageBox.critical(this, "Incorrect input", "Incorrect ray_h");
+        return;
+    }
+
+    if (n <= 1.0)
+    {
+        QMessageBox messageBox;
+        messageBox.critical(this, "Incorrect input", "Incorrect n");
+        return;
+    }
+
+    if (fabs(alpha) > 90.0)
+    {
+        QMessageBox messageBox;
+        messageBox.critical(this, "Incorrect input", "Incorrect alpha");
+        return;
+    }
+
+    const Lens lens(r1, r2, lens_h, d, n);
+    const Ray ray{alpha, ray_h};
+
+    OutputWindow *output_window = new OutputWindow(lens, ray, this);
+    output_window->show();
 }
 
-void InputWindow::on_fill_clicked()
+QWidget *InputWindow::make_labeled_input_line(const QString &labelText, QLineEdit *&lineEdit, int labelWidth)
 {
-    r1_input_line->setText("50");
-    r2_input_line->setText("-50");
-    lens_h_input_line->setText("15");
-    d_input_line->setText("5");
-    n_input_line->setText("1.5");
+    QWidget *widget = new QWidget;
+    QHBoxLayout *layout = new QHBoxLayout(widget);
 
-    alpha_input_line->setText("45");
-    ray_h_input_line->setText("7.5");
-}
+    QLabel *label = new QLabel(labelText);
+    label->setFixedWidth(labelWidth);                       // Align labels by setting a fixed width
+    label->setAlignment(Qt::AlignRight | Qt::AlignVCenter); // Align text to the right
+    lineEdit = new QLineEdit;
+    layout->addWidget(label);
+    layout->addWidget(lineEdit);
 
-QLineEdit *InputWindow::make_new_input_line(const QString &placeholder)
-{
-    QLineEdit *input = new QLineEdit(this);
-
-    input->setPlaceholderText(placeholder);
-
-    QDoubleValidator *validator = new QDoubleValidator(-999.9, 999.9, 8, this);
-    validator->setNotation(QDoubleValidator::StandardNotation);
-
-    input->setValidator(validator);
-
-    return input;
+    return widget;
 }

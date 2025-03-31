@@ -13,10 +13,9 @@ class InputWindow : public QWidget
 
   private slots:
     void on_compute_clicked();
-    void on_fill_clicked();
 
   private:
-    QLineEdit *make_new_input_line(const QString &placeholder);
+    QWidget *make_labeled_input_line(const QString &labelText, QLineEdit *&lineEdit, int labelWidth);
 
     QLineEdit *r1_input_line = nullptr;
     QLineEdit *r2_input_line = nullptr;

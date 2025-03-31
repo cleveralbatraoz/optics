@@ -4,9 +4,11 @@
 #include "lens.h"
 #include "matrix_operations.h"
 
+#include <QLineF>
 #include <QPaintEvent>
 #include <QPainter>
 #include <QPainterPath>
+#include <QPen>
 #include <QPointF>
 #include <QVector>
 #include <QWidget>
@@ -28,90 +30,39 @@ void LensPainter::paintEvent(QPaintEvent *event)
 
     painter.setRenderHint(QPainter::Antialiasing);
 
-    QPen pen;            // Set the color of the line
-    pen.setWidthF(0.35); // Set the width of the line      // Set the style of the line (e.g., solid, dashed, dotted)
-    pen.setCapStyle(Qt::RoundCap);   // Set the cap style for the endpoints
-    pen.setJoinStyle(Qt::RoundJoin); // Set the join style for line joins
+    const QPainterPath lens_path = compose_lens_path();
 
-    // Set the painter's pen
-    painter.setPen(pen);
-
-    const QPainterPath path = composePainterPath();
-
-    const QRectF pathRect = path.boundingRect();
+    const QRectF pathRect = lens_path.boundingRect();
     const QRect widgetRect = rect();
     const QPointF widgetCenter = widgetRect.center();
 
-    const double scaleX = widgetRect.width() / pathRect.width();
-    const double scaleY = widgetRect.height() / pathRect.height();
-    const double scale = std::min(scaleX, scaleY) / 2;
+    const double scale_x = widgetRect.width() / pathRect.width();
+    const double scale_y = widgetRect.height() / pathRect.height();
+    const double scale = std::min(scale_x, scale_y) / 2;
 
     painter.translate(widgetCenter);
     painter.scale(scale, scale);
 
-    painter.fillPath(path, Qt::blue);
+    const double infinity = 200000.0;
+    const double enter_angle = qDegreesToRadians(ray.alpha);
 
-    pen.setColor(Qt::black);
-    pen.setStyle(Qt::SolidLine);
-    painter.setPen(pen);
-    painter.drawPath(path);
+    const RefractionResult refraction_result = lens.refract(ray);
 
-    const double arrow1 = calculateSagitta(lens.get_r1(), ray.h);
-    const QPointF intersection_point(arrow1, -ray.h);
+    const QPointF ray1_vector(std::cos(enter_angle), std::sin(enter_angle));
+    const QPointF ray3_vector(std::cos(refraction_result.exit_angle), std::sin(refraction_result.exit_angle));
 
-    const double length = 200000.0;
+    const QPointF start_point = refraction_result.intersection_point1 - ray1_vector * infinity;
+    const QPointF end_point = refraction_result.intersection_point2 + ray3_vector * infinity;
 
-    const double angle = qDegreesToRadians(ray.alpha);
-    const QPointF end_point = intersection_point - QPointF(std::cos(angle) * length, std::sin(angle) * length);
-    const QLineF line(intersection_point, end_point);
+    const QLineF line1(start_point, refraction_result.intersection_point1);
+    const QLineF line2(refraction_result.intersection_point1, refraction_result.intersection_point2);
+    const QLineF line3(refraction_result.intersection_point2, end_point);
 
-    pen.setColor(Qt::yellow);
-    pen.setStyle(Qt::SolidLine);
-
-    painter.setPen(pen);
-
-    painter.drawLine(line);
-
-    const double r1 = lens.get_r1();
-    const double r2 = lens.get_r2();
-    const double n = lens.get_n();
-    const double mu = 1 / n;
-    const double d = lens.get_d();
-
-    const QVector<QVector<double>> refraction = calculateRefractionMatrix(r1, mu);
-    const QVector<QVector<double>> transfer = calculateTransferMatrix(d);
-
-    const QVector<QVector<double>> ray_matrix1 = {{ray.h}, {angle}};
-    const QVector<QVector<double>> ray_matrix2 = matrixMultiply(refraction, ray_matrix1);
-    const QVector<QVector<double>> ray_matrix3 = matrixMultiply(transfer, ray_matrix2);
-
-    const double arrow2 = calculateSagitta(lens.get_r2(), -ray_matrix3[0][0]);
-    const QPointF intersection_point2(intersection_point.x() + d + arrow2 - arrow1, -ray_matrix3[0][0]);
-
-    pen.setColor(Qt::red);
-    pen.setStyle(Qt::DotLine);
-    painter.setPen(pen);
-
-    painter.drawLine(QLineF(intersection_point, intersection_point2));
-
-    const QVector<QVector<double>> refraction2 = calculateRefractionMatrixReverse(r2, mu);
-    const QVector<QVector<double>> ray_matrix4 = matrixMultiply(refraction2, ray_matrix3);
-    // const QVector<QVector<double>> transfer2 = Lens::calculateTransferMatrix(length);
-    // const QVector<QVector<double>> ray_matrix5 = Lens::matrixMultiply(transfer2, ray_matrix4);
-
-    const QPointF end_point2 =
-        intersection_point2 + QPointF(std::cos(ray_matrix4[1][0]) * length, std::sin(ray_matrix4[1][0]) * length);
-
-    // const QPointF intersection_point3(intersection_point2.x() + length, -ray_matrix5[0][0]); // :D
-
-    pen.setColor(Qt::yellow);
-    pen.setStyle(Qt::SolidLine);
-    painter.setPen(pen);
-
-    painter.drawLine(intersection_point2, end_point2);
+    draw_lens(painter, lens_path);
+    draw_lines(painter, line1, line2, line3);
 }
 
-QPainterPath LensPainter::composePainterPath()
+QPainterPath LensPainter::compose_lens_path()
 {
     QPainterPath path;
 
@@ -171,4 +122,48 @@ QPainterPath LensPainter::composePainterPath()
     path.closeSubpath();
 
     return path;
+}
+
+void LensPainter::draw_lens(QPainter &painter, const QPainterPath &lens_path)
+{
+    QPen pen = obtain_default_pen();
+
+    painter.fillPath(lens_path, Qt::gray);
+
+    pen.setColor(Qt::black);
+    pen.setStyle(Qt::SolidLine);
+    painter.setPen(pen);
+    painter.drawPath(lens_path);
+}
+
+void LensPainter::draw_lines(QPainter &painter, const QLineF &line1, const QLineF &line2, const QLineF &line3)
+{
+    QPen pen = obtain_default_pen();
+    painter.setPen(pen);
+
+    pen.setColor(Qt::yellow);
+    pen.setStyle(Qt::SolidLine);
+    painter.setPen(pen);
+    painter.drawLine(line1);
+
+    pen.setColor(Qt::blue);
+    pen.setStyle(Qt::DotLine);
+    painter.setPen(pen);
+    painter.drawLine(line2);
+
+    pen.setColor(Qt::yellow);
+    pen.setStyle(Qt::SolidLine);
+    painter.setPen(pen);
+    painter.drawLine(line3);
+}
+
+QPen LensPainter::obtain_default_pen()
+{
+    QPen pen;
+
+    pen.setWidthF(0.35);             // Set the width of the line
+    pen.setCapStyle(Qt::RoundCap);   // Set the cap style for the endpoints
+    pen.setJoinStyle(Qt::RoundJoin); // Set the join style for line joins
+
+    return pen;
 }

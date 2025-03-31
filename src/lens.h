@@ -1,8 +1,16 @@
 #pragma once
 
 #include "paraxial_characteristics.h"
+#include "ray.h"
 
-#include <QVector>
+#include <QPointF>
+
+struct RefractionResult
+{
+    QPointF intersection_point1;
+    QPointF intersection_point2;
+    double exit_angle;
+};
 
 class Lens
 {
@@ -14,6 +22,8 @@ class Lens
     double get_d() const;
     double get_h() const;
     double get_n() const;
+
+    RefractionResult refract(const Ray &ray) const;
 
     ParaxialCharacteristics compute_paraxial_characteristics() const;
 
