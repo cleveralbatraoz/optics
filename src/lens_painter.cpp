@@ -15,7 +15,6 @@
 
 #include <algorithm>
 #include <cmath>
-#include <numbers>
 
 LensPainter::LensPainter(const Lens &lens, const Ray &ray, QWidget *parent) : QWidget(parent), lens(lens), ray(ray)
 {
@@ -86,7 +85,7 @@ QPainterPath LensPainter::compose_lens_path()
     else
     {
         // Рисуем 1ю поверхность (сверху вниз)
-        double dAngle = asin(h / r1) * 180 / std::numbers::pi; // угол между осью и крайней точкой поверхности
+        double dAngle = asin(h / r1) * 180 / M_PI; // угол между осью и крайней точкой поверхности
         if (r1 > 0)
         {
             path.arcTo(0, -r1, r1 * 2, r1 * 2, 180 - dAngle, dAngle * 2);
@@ -107,7 +106,7 @@ QPainterPath LensPainter::compose_lens_path()
     else
     {
         // Рисуем 2ю поверхность (сверху вниз)
-        double dAngle = asin(h / r2) * 180 / std::numbers::pi;
+        double dAngle = asin(h / r2) * 180 / M_PI;
         if (r2 > 0)
         {
             path.arcTo(d, -r2, r2 * 2, r2 * 2, 180 + dAngle, -dAngle * 2);
