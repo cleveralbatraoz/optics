@@ -55,27 +55,30 @@ void InputWindow::on_compute_clicked()
     bool ok = true;
 
     const double r1 = r1_input_line->text().toDouble(&ok);
-    const double r2 = r2_input_line->text().toDouble(&ok);
-    const double lens_h = lens_h_input_line->text().toDouble(&ok);
-    const double d = d_input_line->text().toDouble(&ok);
-    const double n = n_input_line->text().toDouble(&ok);
-    const double alpha = alpha_input_line->text().toDouble(&ok);
-    const double ray_h = ray_h_input_line->text().toDouble(&ok);
-
     if (!ok)
     {
         QMessageBox messageBox;
-        messageBox.critical(this, "Incorrect input", "Incorrect input");
+        messageBox.critical(this, "Incorrect input", "Incorrect r1");
         return;
     }
 
-    if (lens_h <= 0.0 || lens_h > std::min(fabs(r1), fabs(r2)))
+    const double r2 = r2_input_line->text().toDouble(&ok);
+    if (!ok)
+    {
+        QMessageBox messageBox;
+        messageBox.critical(this, "Incorrect input", "Incorrect r2");
+        return;
+    }
+
+    const double lens_h = lens_h_input_line->text().toDouble(&ok);
+    if (!ok || lens_h <= 0.0 || lens_h > std::min(fabs(r1), fabs(r2)))
     {
         QMessageBox messageBox;
         messageBox.critical(this, "Incorrect input", "Incorrect lens_h");
         return;
     }
 
+    const double d = d_input_line->text().toDouble(&ok);
     if (d <= 0.0)
     {
         QMessageBox messageBox;
@@ -83,13 +86,7 @@ void InputWindow::on_compute_clicked()
         return;
     }
 
-    if (fabs(ray_h) > lens_h)
-    {
-        QMessageBox messageBox;
-        messageBox.critical(this, "Incorrect input", "Incorrect ray_h");
-        return;
-    }
-
+    const double n = n_input_line->text().toDouble(&ok);
     if (n <= 1.0)
     {
         QMessageBox messageBox;
@@ -97,10 +94,19 @@ void InputWindow::on_compute_clicked()
         return;
     }
 
+    const double alpha = alpha_input_line->text().toDouble(&ok);
     if (fabs(alpha) > 90.0)
     {
         QMessageBox messageBox;
         messageBox.critical(this, "Incorrect input", "Incorrect alpha");
+        return;
+    }
+
+    const double ray_h = ray_h_input_line->text().toDouble(&ok);
+    if (fabs(ray_h) > lens_h)
+    {
+        QMessageBox messageBox;
+        messageBox.critical(this, "Incorrect input", "Incorrect ray_h");
         return;
     }
 

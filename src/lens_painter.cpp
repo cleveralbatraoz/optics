@@ -2,7 +2,6 @@
 
 #include "float.h"
 #include "lens.h"
-#include "matrix_operations.h"
 
 #include <QLineF>
 #include <QPaintEvent>
