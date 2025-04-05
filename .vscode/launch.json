@@ -3,15 +3,12 @@
     "configurations": [
         {
             "name": "Debug Optics",
-            "type": "cppdbg",
+            "type": "lldb",
             "request": "launch",
             "program": "${command:cmake.launchTargetPath}",
             "args": [],
-            "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "lldb"
+            "preLaunchTask": "build"
         }
     ]
 }
