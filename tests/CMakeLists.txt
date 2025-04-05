@@ -1,6 +1,6 @@
 find_package(Qt6 REQUIRED COMPONENTS Test)
 
-qt_add_executable(OpticsTest
+add_executable(OpticsTest
     test_paraxial_characteristics.cpp
 )
 
