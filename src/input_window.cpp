@@ -13,23 +13,16 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include <algorithm>
-#include <cmath>
-
 InputWindow::InputWindow(QWidget *parent) : QWidget(parent)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
 
-    // Define the width based on the label with the maximum length
-    const int labelWidth = 80; // Example fixed width, adjust as needed
+    const int labelWidth = 80;
 
-    // Create a group box to hold the inputs
     QGroupBox *inputsGroupBox = new QGroupBox("Lens Parameters");
 
-    // Create a layout for the group box
     QVBoxLayout *groupBoxLayout = new QVBoxLayout(inputsGroupBox);
 
-    // Add labeled input lines to the group box
     groupBoxLayout->addWidget(make_labeled_input_line("r1:", r1_input_line, labelWidth));
     groupBoxLayout->addWidget(make_labeled_input_line("r2:", r2_input_line, labelWidth));
     groupBoxLayout->addWidget(make_labeled_input_line("h of lens:", lens_h_input_line, labelWidth));
@@ -38,15 +31,12 @@ InputWindow::InputWindow(QWidget *parent) : QWidget(parent)
     groupBoxLayout->addWidget(make_labeled_input_line("α of ray:", alpha_input_line, labelWidth));
     groupBoxLayout->addWidget(make_labeled_input_line("h of ray:", ray_h_input_line, labelWidth));
 
-    // Add the group box to the main layout
     mainLayout->addWidget(inputsGroupBox);
 
-    // Add control buttons
     QPushButton *computeButton = new QPushButton("Compute", this);
     mainLayout->addWidget(computeButton);
     connect(computeButton, &QPushButton::clicked, this, &InputWindow::on_compute_clicked);
 
-    // Set a fixed size for the window
     resize(500, 500);
 }
 
@@ -123,8 +113,8 @@ QWidget *InputWindow::make_labeled_input_line(const QString &labelText, QLineEdi
     QHBoxLayout *layout = new QHBoxLayout(widget);
 
     QLabel *label = new QLabel(labelText);
-    label->setFixedWidth(labelWidth);                       // Align labels by setting a fixed width
-    label->setAlignment(Qt::AlignRight | Qt::AlignVCenter); // Align text to the right
+    label->setFixedWidth(labelWidth);
+    label->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
     lineEdit = new QLineEdit;
     layout->addWidget(label);
     layout->addWidget(lineEdit);

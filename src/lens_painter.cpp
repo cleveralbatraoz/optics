@@ -14,6 +14,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <numbers>
 
 LensPainter::LensPainter(const Lens &lens, const Ray &ray, QWidget *parent) : QWidget(parent), lens(lens), ray(ray)
 {
@@ -69,12 +70,9 @@ QPainterPath LensPainter::compose_lens_path()
     const double h = lens.get_h();
     const double d = lens.get_d();
 
-    // Вычисляем стрелку прогиба поверхностей
-
     const double arrow1 = calculateSagitta1(lens);
     const double arrow2 = calculateSagitta2(lens);
 
-    // Первая точка контура - верхняя точка поверхности
     path.moveTo(arrow1, -h);
 
     if (isZero(r1))
@@ -83,8 +81,7 @@ QPainterPath LensPainter::compose_lens_path()
     }
     else
     {
-        // Рисуем 1ю поверхность (сверху вниз)
-        double dAngle = asin(h / r1) * 180 / M_PI; // угол между осью и крайней точкой поверхности
+        double dAngle = asin(h / r1) * 180 / std::numbers::pi;
         if (r1 > 0)
         {
             path.arcTo(0, -r1, r1 * 2, r1 * 2, 180 - dAngle, dAngle * 2);
@@ -95,7 +92,6 @@ QPainterPath LensPainter::compose_lens_path()
         }
     }
 
-    // Добавляем нижнюю линию между поверхностями
     path.lineTo(path.currentPosition() + QPointF(d + arrow2 - arrow1, 0.0));
 
     if (isZero(r2))
@@ -104,8 +100,7 @@ QPainterPath LensPainter::compose_lens_path()
     }
     else
     {
-        // Рисуем 2ю поверхность (сверху вниз)
-        double dAngle = asin(h / r2) * 180 / M_PI;
+        double dAngle = asin(h / r2) * 180 / std::numbers::pi;
         if (r2 > 0)
         {
             path.arcTo(d, -r2, r2 * 2, r2 * 2, 180 + dAngle, -dAngle * 2);
@@ -116,7 +111,6 @@ QPainterPath LensPainter::compose_lens_path()
         }
     }
 
-    // Замыкаем контур
     path.closeSubpath();
 
     return path;
@@ -159,9 +153,9 @@ QPen LensPainter::obtain_default_pen()
 {
     QPen pen;
 
-    pen.setWidthF(0.35);             // Set the width of the line
-    pen.setCapStyle(Qt::RoundCap);   // Set the cap style for the endpoints
-    pen.setJoinStyle(Qt::RoundJoin); // Set the join style for line joins
+    pen.setWidthF(0.35);
+    pen.setCapStyle(Qt::RoundCap);
+    pen.setJoinStyle(Qt::RoundJoin);
 
     return pen;
 }

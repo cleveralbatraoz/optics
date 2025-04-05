@@ -2,6 +2,6 @@
 
 struct Ray
 {
-    double alpha; // in degrees
+    double alpha;
     double h;
 };

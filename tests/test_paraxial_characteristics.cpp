@@ -24,12 +24,12 @@ void TestParaxialCharacteristics::test1()
     const Lens lens(-50.0, -50.0, 15.0, 15.0, 1.5);
     const ParaxialCharacteristics p = lens.compute_paraxial_characteristics();
 
-    QVERIFY(qFuzzyCompare(p.f.front, -1000.0));
-    QVERIFY(qFuzzyCompare(p.f.back, 1000.0));
-    QVERIFY(qFuzzyCompare(p.sf.front, -900.0));
-    QVERIFY(qFuzzyCompare(p.sf.back, 1100.0));
-    QVERIFY(qFuzzyCompare(p.sh.front, 100.0));
-    QVERIFY(qFuzzyCompare(p.sh.back, 100.0));
+    QCOMPARE_LE(fabs(p.f.front - -1000.0), EPS);
+    QCOMPARE_LE(fabs(p.f.back - 1000.0), EPS);
+    QCOMPARE_LE(fabs(p.sf.front - -900.0), EPS);
+    QCOMPARE_LE(fabs(p.sf.back - 1100.0), EPS);
+    QCOMPARE_LE(fabs(p.sh.front - 100.0), EPS);
+    QCOMPARE_LE(fabs(p.sh.back - 100.0), EPS);
 }
 
 void TestParaxialCharacteristics::test2()

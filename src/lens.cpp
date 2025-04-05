@@ -70,18 +70,16 @@ ParaxialCharacteristics Lens::compute_paraxial_characteristics() const
 {
     const QVector<QVector<double>> G = calculateGaussianMatrix(r1, r2, d, n);
 
-    // Элементы матрицы G
-    double A = G[0][0];
-    double C = G[1][0];
-    double D = G[1][1];
+    const double A = G[0][0];
+    const double C = G[1][0];
+    const double D = G[1][1];
 
-    // Расчет параметров
-    double f_back = 1 / C;
-    double f_front = -f_back;
-    double Sf_back = A / C;
-    double Sf_front = (-D) / C;
-    double Sh_front = Sf_front + f_back;
-    double Sh_back = Sf_back - f_back;
+    const double f_back = 1 / C;
+    const double f_front = -f_back;
+    const double Sf_back = A / C;
+    const double Sf_front = (-D) / C;
+    const double Sh_front = Sf_front + f_back;
+    const double Sh_back = Sf_back - f_back;
 
     return {.f = {f_front, f_back}, .sf = {Sf_front, Sf_back}, .sh = {Sh_front, Sh_back}};
 }
