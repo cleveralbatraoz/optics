@@ -2,13 +2,13 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			"label": "Build All",
 			"type": "cmake",
-			"label": "build",
 			"command": "build",
 			"targets": [
 				"all"
 			],
-			"group": "build"
+			"group": "build",
 		}
 	]
 }
